@@ -1,0 +1,143 @@
+﻿@model IEnumerable<ZarzadzanieProjektem.Models.Osoba>
+
+@{
+    ViewBag.Title = "Index";
+}
+@section Scripts {
+    @Scripts.Render("~/bundles/projectViewScripts")
+}
+<h2>Index</h2>
+
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.Imie)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Nazwisko)
+        </th>
+        <th>
+            Projekt(y)
+        </th>
+    </tr>
+
+@foreach (var item in Model) {
+    <tr>
+        <td>
+            @Html.DisplayFor(modelItem => item.Imie)
+        </td>
+        <td>
+            @Html.DisplayFor(modelItem => item.Nazwisko)
+        </td>
+        <td>
+            <table class="table">
+                <tr>
+                    <th>Tytuł projektu</th>
+                    <th>Akcja</th>
+                    <th>GitHub</th>
+                    <th>Realizacja</th>
+                    <th>Założenia</th>
+                </tr>
+                @if (item.ProjektClaimed != null)
+                {
+                <tr class="success">
+                    <td>@Html.DisplayFor(it=>item.ProjektClaimed.Projekt.Tytul)</td>
+                    <td>
+                        @if (!String.IsNullOrEmpty(item.ProjektClaimed.GitHubLink) || item.ProjektClaimed.Dokumentacja != null)
+                        {
+                        <button class="btn customButtonSize btn-info btn-xs">
+                            Realizowany
+                        </button>
+                        }
+                        else
+                        {
+                            <button class="btn customButtonSize btn-info btn-xs">
+                                Oczekuje
+                            </button>
+                        }
+                    </td>
+                    <td>
+                    @if (!String.IsNullOrEmpty(item.ProjektClaimed.GitHubLink))
+                    {
+                        <button target="_blank" onclick="window.open('@item.ProjektClaimed.GitHubLink','_blank')" class="customButtonSize btn btn-xs btn-info">Link</button>
+                    }
+                    else
+                    {
+                        <button class="customButtonSize btn btn-danger btn-xs">Brak</button>
+                    }
+                    </td>
+                    <td>
+                    @if (item.ProjektClaimed.Dokumentacja != null)
+                    {
+                        <button onclick="location.href='@Url.Action("Download", "Dokumentacja", new { Id = item.ProjektClaimed.Dokumentacja.DokumentacjaId })';return false;" class="customButtonSize btn btn-xs btn-primary">Pobierz</button>
+                    }
+                    else
+                    {
+                        <button class="btn customButtonSize btn-danger btn-xs">Brak</button>
+                    }
+                    </td>
+                    <td>
+                        @if (item.ProjektClaimed.DokumentacjaZalozen != null)
+                    {
+                            <button onclick="location.href='@Url.Action("Download", "Dokumentacja", new { Id = item.ProjektClaimed.DokumentacjaZalozen.DokumentacjaId })';return false;" class="customButtonSize btn btn-xs btn-primary">Pobierz</button>
+                        }
+                        else
+                        {
+                            <button class="btn customButtonSize btn-danger btn-xs">Brak</button>
+                        }
+                    </td>              
+                </tr>
+                }
+                else
+                {
+                    <tr class="success">
+                        <td colspan="5"><center>Brak zaakceptowanych projektów</center></td>
+                    </tr>
+                }
+                @if (item.NonClaimedProjekts.Any())
+                {
+                    foreach (var claim in item.NonClaimedProjekts)
+                    {
+
+                        if (item.ProjektClaimed == null || item.ProjektClaimed.Projekt != claim)
+                        {
+                            <tr class="warning">
+                                <td>@Html.DisplayFor(it => claim.Tytul)</td>
+                                <td>
+                                    @if (item.ProjektClaimed == null)
+                                    {
+                                        <button onclick="claimFinal(@item.OsobaId,@claim.ProjectId)" id="@String.Format("btnClaimFinal{0}", claim.ProjectId)" class="customButtonSize claimFinalButton btn btn-success btn-xs" type="submit">
+                                            Zaakceptuj
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        if (String.IsNullOrEmpty(item.ProjektClaimed.GitHubLink)||item.ProjektClaimed.Dokumentacja==null)
+                                        {
+                                            <button onclick="claimFinal(@item.OsobaId,@claim.ProjectId)" id="@String.Format("btnClaimFinal{0}", claim.ProjectId)" class="customButtonSize claimFinalButton btn btn-warning btn-xs" type="submit">
+                                                Zmień
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <button class="btn customButtonSize btn-info btn-xs">
+                                                Realizowany
+                                            </button>
+                                        }
+                                    }
+                                </td>
+                                <td><button class="btn customButtonSize btn-danger btn-xs">Brak</button></td>
+                                <td><button class="btn customButtonSize btn-danger btn-xs">Brak</button></td>
+                                <td><button class="btn customButtonSize btn-danger btn-xs">Brak</button></td>
+                            </tr>
+                        }
+                    }
+                }
+            </table>
+            @*@Html.ActionLink("Edit", "Edit", new { id=item.OsobaId }) |
+            @Html.ActionLink("Details", "Details", new { id=item.OsobaId }) |
+            @Html.ActionLink("Delete", "Delete", new { id=item.OsobaId })*@
+        </td>
+    </tr>
+}
+</table>

@@ -1,0 +1,239 @@
+﻿@*@model IEnumerable<ZarzadzanieProjektem.Models.Project>*@
+@model ZarzadzanieProjektem.Models.ProjectViewModel
+@{
+    ViewBag.Title = "Index";
+
+}
+@section Scripts {
+    @Scripts.Render("~/bundles/projectViewScripts")
+}
+
+<h2>Index</h2>
+
+<p>
+    @Html.ActionLink("Create New", "Create")
+</p>
+<table class="table">
+    <tr>
+        @{var dummy = Model.Projekty.FirstOrDefault(); }
+        <th>
+            
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => dummy.Tytul)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => dummy.Opis)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => dummy.Wymagania)
+        </th>
+        <th>Założenia</th>
+        <th>Szczegóły</th>
+        @if (User.IsInRole("Administrator"))
+        {
+        <th></th>
+        }
+        else
+        {
+            <th>Status</th>
+            <th>Akcja</th>
+        }
+    </tr>
+    @foreach (var item in Model.Projekty)
+    {
+        bool isClaimed = false;
+        bool isContaining = false;
+        if (Model.LoggedUser != null)
+        {
+            if (Model.LoggedUser.ProjektClaimed != null)
+            {
+                isClaimed = Model.LoggedUser.ProjektClaimed.Projekt == item;
+            }
+            isContaining = item.Wykonawcy.Contains(Model.LoggedUser);
+        }
+        if (isClaimed)
+        {
+            <text><tr class="success"></text>
+        }
+        else if (isContaining)
+        {
+            <text><tr class="warning"></text>
+        }
+        else
+        {
+           <text> <tr class="bezPowiazania"></text>
+        }
+            <td>
+               @if (User.IsInRole("Administrator"))
+               {
+                <button id="@item.ProjectId" class="expandButton btn btn-success btn-xs" type="submit">
+                    <span class="glyphicon glyphicon-plus-sign" aria-hidden="true"></span>
+                </button>
+               }
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Tytul, new { maxLength = 10 })
+            </td>
+            <td>
+                @{
+                    string Opis = item.Opis.SubStringTo(10);
+                }
+                @Html.DisplayFor(modelItem => Opis)
+            </td>
+            <td>
+                @{
+                    string Wymagania = item.Wymagania.SubStringTo(10);
+                }
+                @Html.DisplayFor(modelItem => Wymagania)
+            </td> 
+            <td>@if (item.Zalozenia != null)
+                        {
+                            @*@Html.ActionLink("Download", "Download", "Dokumentacja", new { Id = item.Zalozenia.DokumentacjaId }, new { target = "_blank" });*@
+                            <button onclick="location.href='@Url.Action("Download", "Dokumentacja", new { Id=item.Zalozenia.DokumentacjaId })';return false;" class="customButtonSize btn btn-primary btn-xs">Pobierz</button>
+            }
+            else
+            {
+                    <button class="customButtonSize btn btn-danger btn-xs">Brak</button>
+            }
+            </td> 
+            <td>
+                <button onclick="location.href='@Url.Action("Details", "Projects", new {id = item.ProjectId})';return false;" class="customButtonSize btn btn-xs btn-primary">Więcej</button>
+    @*@Html.ActionLink("Edytuj", "Detail", new { id = item.ProjectId });*@
+            </td>
+                if (User.IsInRole("Administrator"))
+                {
+                    <text><td>
+                    <button onclick="location.href='@Url.Action("Edit", "Projects", new {id = item.ProjectId})';return false;" class="customButtonSize btn btn-xs btn-warning">Edytuj</button>
+                    @*@Html.ActionLink("Edytuj", "Edit", new { id = item.ProjectId });*@
+                    @Html.Raw(" ")
+                    <button onclick="location.href='@Url.Action("Delete", "Projects", new {id = item.ProjectId})';return false;" class="customButtonSize btn btn-xs btn-danger">Usuń</button>
+                    @*@Html.ActionLink("Usuń", "Delete", new { id = item.ProjectId });*@
+                    @Html.Raw(" ")
+                    </td></text>
+                }
+                else
+                {
+                    if (isClaimed)
+                    {
+                        <td><a>Twoj zaakcetpowany projekt</a></td>
+                        <td>...</td>
+                    }
+                    else if (isContaining)
+                    {
+                        <td><a>Już zapisany</a></td>
+                        <td>@Html.ActionLink("Wypisz Się", "DisclaimNonFinalProject", new { ProjectId = item.ProjectId ,UserId=Model.LoggedUser.OsobaId})</td>
+                    }
+                    else
+                    {
+                        <td><a>---</a></td>
+                        <td>@Html.ActionLink("Zapisz Się", "ClaimProject", new { id = item.ProjectId })</td>
+                    }                  
+                }
+        @*</tr>*@
+        if (User.IsInRole("Administrator")&&item.Wykonawcy.Count != 0)
+        {
+            <tr class="collapse" id="@String.Format("tr{0}", item.ProjectId)">
+                <td colspan="1"></td>
+                <td colspan="4">
+                <table class="table table-hover">
+                    <tr>
+                        @{var dummy2 = item.Wykonawcy.FirstOrDefault(); }
+                        <th>
+                            @Html.DisplayNameFor(model => dummy2.Imie)
+                        </th>
+                        <th>
+                            @Html.DisplayNameFor(model => dummy2.Nazwisko)
+                        </th>
+                        @if (User.IsInRole("Administrator"))
+                        {
+                            <th>Akcja</th>
+                            <th>GitHub</th>
+                            <th>Realizacja</th>
+                            <th>Założenia</th>
+                        }
+                    </tr>
+                        @foreach (var wykonawca in item.Wykonawcy)
+                        {
+                            <tr>
+                                <td>
+                                    @Html.DisplayFor(modelItem => wykonawca.Imie)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => wykonawca.Nazwisko)
+                                </td>
+                                @if (User.IsInRole("Administrator"))
+                                {
+                                <td>
+                                    @if (wykonawca.ProjektClaimed == null)
+                                    {
+                                        <button onclick="claimFinal(@wykonawca.OsobaId,@item.ProjectId)" id="@String.Format("btnClaimFinal{0}", item.ProjectId)" class="customButtonSize claimFinalButton btn btn-success btn-xs" type="submit">
+                                            Zaakceptuj
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        if (item.ProjectId == wykonawca.ProjektClaimed.Projekt.ProjectId)
+                                        {
+                                            <button onclick="disclaimFinal(@wykonawca.OsobaId,@item.ProjectId)" id="@String.Format("btnDisclaimFinal{0}", item.ProjectId)" class="customButtonSize claimFinalButton btn btn-danger btn-xs" type="submit">
+                                                Odrzuć
+                                            </button>
+                                        }
+                                        else if(item.ProjectId != wykonawca.ProjektClaimed.Projekt.ProjectId)
+                                        {
+                                            <button id="@String.Format("btnNotClaimFinal{0}", item.ProjectId)" class="customButtonSize claimFinalButton btn btn-warning btn-xs" type="submit">
+                                                Przypisany
+                                            </button>
+                                        }
+                                        //Redundant, "odrzuc" is checking it before this
+                                        else
+                                        {
+                                            <button id="@String.Format("btnNotClaimFinal{0}", item.ProjectId)" class="customButtonSize claimFinalButton btn btn-info btn-xs" type="submit">
+                                                Przypisany do tego
+                                            </button>
+                                        }
+                                    }
+                                    <td>
+                                        @if (wykonawca.ProjektClaimed != null&&!String.IsNullOrEmpty(wykonawca.ProjektClaimed.GitHubLink))
+                                        {
+                                            @*<a target="_blank" href="@wykonawca.ProjektClaimed.GitHubLink">Link</a>*@
+                                            <button target="_blank" onclick="window.open('@wykonawca.ProjektClaimed.GitHubLink','_blank')" class="customButtonSize btn btn-xs btn-info">Link</button>
+                                        }
+                                        else
+                                        {
+                                            <button class="customButtonSize btn btn-danger btn-xs">Brak</button>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (wykonawca.ProjektClaimed != null&&wykonawca.ProjektClaimed.Dokumentacja!=null)
+                                        {
+                                            @*@Html.ActionLink("Download", "Download","Dokumentacja",new { Id = wykonawca.ProjektClaimed.Dokumentacja.DokumentacjaId }, new { target = "_blank" });*@
+                                            <button onclick="location.href='@Url.Action("Download", "Dokumentacja", new { Id = wykonawca.ProjektClaimed.Dokumentacja.DokumentacjaId })';return false;" class="customButtonSize btn btn-xs btn-primary">Pobierz</button>
+                                        }
+                                        else
+                                        {
+                                            <button class="btn customButtonSize btn-danger btn-xs">Brak</button>
+                                        }
+                                    </td>
+                                <td>
+                                    @if (wykonawca.ProjektClaimed != null && wykonawca.ProjektClaimed.DokumentacjaZalozen != null)
+                                    {
+                                        @*@Html.ActionLink("Download", "Download","Dokumentacja",new { Id = wykonawca.ProjektClaimed.Dokumentacja.DokumentacjaId }, new { target = "_blank" });*@
+                                        <button onclick="location.href='@Url.Action("Download", "Dokumentacja", new { Id = wykonawca.ProjektClaimed.DokumentacjaZalozen.DokumentacjaId })';return false;" class="customButtonSize btn btn-xs btn-primary">Pobierz</button>
+                                    }
+                                    else
+                                    {
+                                        <button class="btn customButtonSize btn-danger btn-xs">Brak</button>
+                                    }
+                                </td>
+
+                                </td>
+                                }
+                            </tr>
+                        }
+                </table>
+            </td>
+            </tr>
+        }
+    }
+</table>

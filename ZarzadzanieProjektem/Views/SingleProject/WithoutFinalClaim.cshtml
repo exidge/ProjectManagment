@@ -1,0 +1,17 @@
+﻿@model List<ZarzadzanieProjektem.Models.Project>
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Index</h2>
+
+<h1>Nie zostałeś jeszcze zakwalifikowany do żadnego projektu, poczekaj aż prowadzący zaakceptuje twoje uczestnictwo w projekcie.</h1>
+<p>Wyraziłeś chęć do uczestniczenia w projektach:</p>
+@foreach (var item in Model)
+{
+    <p>@Html.DisplayFor(modelItem => item.Tytul)</p>
+}
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+}

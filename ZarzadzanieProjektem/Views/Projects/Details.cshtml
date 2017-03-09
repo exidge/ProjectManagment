@@ -1,0 +1,47 @@
+﻿@model ZarzadzanieProjektem.Models.Project
+
+@{
+    ViewBag.Title = "Details";
+}
+
+<h2>Details</h2>
+
+<div>
+    <h4>Project</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.Tytul)
+        </dt>
+
+        <dd>
+            @Html.TextAreaFor(model => model.Tytul, 1, 50, new { @class = "form-control" })
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Opis)
+        </dt>
+
+        <dd>
+            @Html.TextAreaFor(model => model.Opis, 5, 50, new { @class = "form-control" })
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Wymagania)
+        </dt>
+
+        <dd>
+            @Html.TextAreaFor(model => model.Wymagania, 5, 50, new { @class = "form-control" })
+        </dd>
+        <dt>
+            @Html.DisplayNameFor(model=>model.Zalozenia)
+        </dt>
+        <dd>
+            <button onclick="location.href='@Url.Action("Download", "Dokumentacja", new { Id = Model.Zalozenia.DokumentacjaId })';return false;" class="customButtonSize btn btn-xs btn-primary">Pobierz</button>
+        </dd>
+    </dl>
+</div>
+<p>
+    @Html.ActionLink("Edit", "Edit", new { id = Model.ProjectId }) |
+    @Html.ActionLink("Back to List", "Index")
+</p>
